@@ -5,7 +5,7 @@ if server
  run('../setup_autonn'); 
  load('../imdb/celebaimdb.mat');
  cmf = load('../util/rgbCMF.mat');
- load ('/local/data/Sarah/BioFaceTemplate/util/illF.mat');
+ load ('../util/illF.mat');
  load ('../util/illumA.mat');
  load ('../util/illumDmeasured.mat');
  load ('../util/Newskincolour.mat');
