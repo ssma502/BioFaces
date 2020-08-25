@@ -75,71 +75,61 @@ Y1 = Y1.*muim;
 rgbim = ((scaleRGB) - Y1);
 X1 = ones(size(rgbim),'single');
 rgbim = rgbim.*X1; rgbim.name = 'rgbim';
-%% ------------------------- LOSSES ---------------------------------------
-nFGpix = sum(sum(actualmasks,1),2);
-
-% camera loss
-% appearance
-delta = (images - rgbim ).*actualmasks;
-
-%shading
+%% Compute scale of the shading
 scale = sum( sum( (actualshading.*predictedShading).*actualmasks, 1), 2) ./ sum( sum( (predictedShading.^2).*actualmasks, 1), 2);
 
 predictedShading = predictedShading.*scale;
 alpha = (actualshading - predictedShading).*actualmasks;
 
-% weights
+%% ------------------------- LOSSES ---------------------------------------
+%% CNN weights
 blossweight = 1e-4;  
-appweight = 1e-3; % 
-Shadingweight = 0.00001; 
-sparseweight = 1e-5;
-%----------------------
-% camera 
+appweight = 1e-3; %
+Shadingweight = 1e-5; 
+sparseweight = 1e-5; 
+
+% Camera parameter loss:
 priorB = sum(b(:).^2);  priorB.name ='priorB';
 priorloss = (priorB(:)).*blossweight; 
 ZY = ones(size(priorloss),'single');
 priorloss = priorloss.*ZY;
-priorloss.name='priorloss';
+priorloss.name ='priorloss';
 %----------------------
 % L2: appearance loss :
-delta = delta ./ nFGpix;
-appearanceloss = sum(delta(:).^single(2)).*appweight; 
+delta = (images - rgbim ).*actualmasks;
+appearanceloss = (sum(delta(:).^single(2))./ single(224 * 224)).*appweight  ; 
 Y = ones(size(appearanceloss),'single');
 appearanceloss = appearanceloss.*Y;
 appearanceloss.name ='appearanceloss';
+%--------------------------
+shadingloss = sum(alpha(:).^single(2)) .* Shadingweight;
+ff = ones(size(shadingloss),'single');
+shadingloss = shadingloss.*ff;
+shadingloss.name = 'shadingloss';
 %----------------------
+% % L1 sparsity loss:
 sparsityloss = sum(Specularities(:)).*sparseweight ;
 J = ones(size(sparsityloss),'single');
 sparsityloss = sparsityloss.*J;
 sparsityloss.name = 'sparsityloss';
-%----------------------
-% shading
-shadingloss = sum(alpha(:).^single(2)) .* Shadingweight;
-ff = ones(size(shadingloss),'single');
-shadingloss = shadingloss.*ff;
-shadingloss.name ='shadingloss';
-% ---------------------
-loss = appearanceloss + priorloss +shadingloss+sparsityloss;
+
+%% Final Loss:
+ loss = appearanceloss + priorloss + sparsityloss +shadingloss;
 loss.name= 'loss';
 loss.sequentialNames();
 %%
 if server
-  gpuDevice(1);
-  images.gpu=true;
-  opts.gpus = [1] ;
+gpuDevice(2);
+images.gpu=true;
+opts.gpus = [2] ;
 end
 opts.batchSize = batchSize ;
 opts.numEpochs = 200 ;
-opts.learningRate =1e-3;
+opts.learningRate = 1e-5;    
 
+opts.expDir = 'data/will_test' ;
+opts.stats = {'loss','appearanceloss','priorloss','sparsityloss','shadingloss'};
 
-opts.expDir = 'data/SelfSupervisonBioMaps' ;
-opts.stats = {'loss','appearanceloss','priorloss','shadingloss','sparsityloss'};
-
+%%
 net = Net(loss);
 [net, stats] = cnn_train_autonn(net, celebaimdb, @getBatch, opts) ;
-
-
-
-
-
