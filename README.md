@@ -1,2 +1,4 @@
 # BioFaces
-The source code of paper: Deep Biophysical Face Image Interpretation 
+This rosparitey represnts our implemetation of the paper "Lightweight Dichromatic and Biophysical Models for Face Analysis". We implemented all models and CNN using  MatConvNet with autonn. For the instructions, Plese see [the installation page](https://www.vlfeat.org/matconvnet/install/) 
+
+The easiest way to run the code is to run the mainBioFaces.m script. This loads all models, and then trains the CNN.
