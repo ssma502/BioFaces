@@ -12,7 +12,6 @@ if server
  load ('../util/Tmatrix.mat');
 
  nimages = 50765;
- stimages =1;
  batchSize= 64;
 
 % load your dataset: training, eval, testing..
