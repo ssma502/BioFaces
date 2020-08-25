@@ -21,7 +21,7 @@ batchSize= 64;
 end
 %% ------------------------------------------------------------------------
 % PCA model for camera sensitivities
-[mu,PC,EVpca] = CameraSensitivityPCA(cmf);
+[mu,PC,EVpca] = CameraSensitivityPCA(rgbCMF);
 %% predicted vectors sizes
 LightVectorSize = single(15);  % 15 paramters of light model
 wavelength = single(33); 
