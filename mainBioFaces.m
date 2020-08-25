@@ -19,7 +19,7 @@ actualmasks.name = 'actualmasks';
 
 % CNN paramters
 nfilters = (single([32 64 128 256 512]));
-nclass = single(4);
+nclass = single(4); % 4 decoders
 %---------------------------- CNN -----------------------------------------
 [lightingparameters,b,fmel,fblood,predictedShading,specmask] = CNN(images,nfilters,nclass,LightVectorSize,bSize);
 %% ------------------------  Scale Parameters -----------------------------
@@ -89,14 +89,12 @@ predictedShading = predictedShading.*scale;
 alpha = (actualshading - predictedShading).*actualmasks;
 
 % weights
-blossweight = 1e-4;   % was: 0.0001;  with appearance loss only
+blossweight = 1e-4;  
 appweight = 1e-3; % 
-% fmelSmoothweight = 1e-4;
-% bloodSmoothweight = 1e-4;
 Shadingweight = 0.00001; 
-sparseweight = 1e-5; %1e-5; %1e-5;
+sparseweight = 1e-5;
 %----------------------
-% camera
+% camera 
 priorB = sum(b(:).^2);  priorB.name ='priorB';
 priorloss = (priorB(:)).*blossweight; 
 ZY = ones(size(priorloss),'single');
@@ -121,46 +119,23 @@ ff = ones(size(shadingloss),'single');
 shadingloss = shadingloss.*ff;
 shadingloss.name ='shadingloss';
 % ---------------------
-% fmel, fblood, shading smoothness in specular regions loss
-% sobelGxy = zeros(3,3,1,2,'single') ;
-% sobelGxy(:,:,:,1) = single([-1 0 1; -2 0 2; -1 0 1]); 
-% sobelGxy(:,:,:,2) = single([-1 -2 -1; 0 0 0; 1 2 1]);
-% sobelfilter = Param('value',single(sobelGxy),'learningRate',0);
-% % 
-
-% Sobelblood = vl_nnconv(fblood,sobelfilter,[],'pad', 1);
-% fbloodloss = (sum(sum(abs(Sobelblood(:)),1),2))./nFGpix;
-% bloodsmoothnessloss = sum(fbloodloss(:)).*bloodSmoothweight;
-% qq = ones(size(bloodsmoothnessloss),'single');
-% bloodsmoothnessloss = bloodsmoothnessloss.*qq;
-% bloodsmoothnessloss.name ='bloodsmoothnessloss';
-% 
-% Sobelmel = vl_nnconv(fmel,sobelfilter,[],'pad', 1);
-% fmelloss = (sum(sum(abs(Sobelmel(:)),1),2))./nFGpix;
-% fmelsmoothnessloss = sum(fmelloss(:)).*fmelSmoothweight;
-% q = ones(size(fmelsmoothnessloss),'single');
-% fmelsmoothnessloss = fmelsmoothnessloss.*q;
-% fmelsmoothnessloss.name ='fmelsmoothnessloss';
-
 loss = appearanceloss + priorloss +shadingloss+sparsityloss;
 loss.name= 'loss';
 loss.sequentialNames();
 %%
 if server
-gpuDevice(1);
-images.gpu=true;
-opts.gpus = [1] ;
+  gpuDevice(1);
+  images.gpu=true;
+  opts.gpus = [1] ;
 end
 opts.batchSize = batchSize ;
 opts.numEpochs = 200 ;
-opts.learningRate =1e-6;
+opts.learningRate =1e-3;
 
 
 opts.expDir = 'data/SelfSupervisonBioMaps' ;
 opts.stats = {'loss','appearanceloss','priorloss','shadingloss','sparsityloss'};
-%opts.stats = {'loss','appearanceloss','priorloss','sparsityloss','melaninVarloss','fbloodVarloss','shadingloss'};
 
-%%
 net = Net(loss);
 [net, stats] = cnn_train_autonn(net, celebaimdb, @getBatch, opts) ;
 
