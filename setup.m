@@ -1,27 +1,26 @@
 
-server = true;
+%This script configures the necessary library, load and prepare the data used in the experimentserver = true;
 if server
-  % setup  
-run('../vl_setupnn');
-run('../setup_autonn'); 
-load('../imdb/celebaimdb.mat');
-cmf = load('../util/rgbCMF.mat');
-load ('/local/data/Sarah/BioFaceTemplate/util/illF.mat');
-load ('../util/illumA.mat');
-load ('../util/illumDmeasured.mat');
-load ('../util/Newskincolour.mat');
-load ('../util/Tmatrix.mat');
+ run('../vl_setupnn');
+ run('../setup_autonn'); 
+ load('../imdb/celebaimdb.mat');
+ cmf = load('../util/rgbCMF.mat');
+ load ('/local/data/Sarah/BioFaceTemplate/util/illF.mat');
+ load ('../util/illumA.mat');
+ load ('../util/illumDmeasured.mat');
+ load ('../util/Newskincolour.mat');
+ load ('../util/Tmatrix.mat');
 
-nimages = 50765;
-stimages =1;
-batchSize= 64;
+ nimages = 50765;
+ stimages =1;
+ batchSize= 64;
 
 % load your dataset: training, eval, testing..
 
 end
 %% ------------------------------------------------------------------------
 % PCA model for camera sensitivities
-[mu,PC,EVpca] = CameraSensitivityPCA(rgbCMF);
+[mu,PC,EVpca] = CameraSensitivityPCA(cmf);
 %% predicted vectors sizes
 LightVectorSize = single(15);  % 15 paramters of light model
 wavelength = single(33); 
